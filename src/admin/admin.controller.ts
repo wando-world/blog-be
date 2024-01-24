@@ -10,12 +10,14 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import {AdminService} from './admin.service';
-import {CreateAdminDto} from './dto/create-admin.dto';
-import {UpdateAdminDto} from './dto/update-admin.dto';
-import {admin} from "@prisma/client";
-import {ResponseMessage} from "../common/decorators/response.message.decorator";
+import { AdminService } from './admin.service';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { UpdateAdminDto } from './dto/update-admin.dto';
+import { admin } from '@prisma/client';
+import { ResponseMessage } from '../common/decorators/response.message.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('admin')
 @Controller('api/admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
@@ -29,7 +31,7 @@ export class AdminController {
   @Get()
   @ResponseMessage('조회 완료!')
   async findAll(): Promise<admin[]> {
-    return await this.adminService.findAll()
+    return await this.adminService.findAll();
   }
 
   @Get(':id')
@@ -41,7 +43,7 @@ export class AdminController {
       throw new HttpException('없는 관리자!', HttpStatus.NOT_FOUND);
     }
 
-    return foundOne
+    return foundOne;
   }
 
   @Patch(':id')
