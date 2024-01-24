@@ -1,42 +1,61 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
   Param,
-  Delete, ParseIntPipe,
+  ParseIntPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import {AdminService} from './admin.service';
+import {CreateAdminDto} from './dto/create-admin.dto';
+import {UpdateAdminDto} from './dto/update-admin.dto';
+import {admin} from "@prisma/client";
+import {ResponseMessage} from "../common/decorators/response.message.decorator";
 
 @Controller('api/admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post()
-  create(@Body() createAdminDto: CreateAdminDto) {
-    return this.adminService.create(createAdminDto);
+  @ResponseMessage('생성 완료!')
+  async create(@Body() createAdminDto: CreateAdminDto): Promise<void> {
+    await this.adminService.create(createAdminDto);
   }
 
   @Get()
-  findAll() {
-    return this.adminService.findAll();
+  @ResponseMessage('조회 완료!')
+  async findAll(): Promise<admin[]> {
+    return await this.adminService.findAll()
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.findOne(id);
+  @ResponseMessage('조회 완료!')
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<admin> {
+    const foundOne: admin = await this.adminService.findOne(id);
+
+    if (foundOne == null) {
+      throw new HttpException('없는 관리자!', HttpStatus.NOT_FOUND);
+    }
+
+    return foundOne
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateAdminDto: UpdateAdminDto) {
-    return this.adminService.update(id, updateAdminDto);
+  @ResponseMessage('수정 완료!')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAdminDto: UpdateAdminDto,
+  ): Promise<void> {
+    await this.adminService.update(id, updateAdminDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.adminService.remove(id);
+  @ResponseMessage('삭제 완료!')
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.adminService.remove(id);
   }
 }

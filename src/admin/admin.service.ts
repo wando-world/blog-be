@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
-import { admin } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import {HttpException, HttpStatus, Injectable, Logger, NotFoundException} from '@nestjs/common';
+import {CreateAdminDto} from './dto/create-admin.dto';
+import {UpdateAdminDto} from './dto/update-admin.dto';
+import {admin} from '@prisma/client';
+import {PrismaService} from '../prisma.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AdminService {
+  private readonly logger: Logger = new Logger(AdminService.name)
   constructor(private prismaService: PrismaService) {}
 
   async create(createAdminDto: CreateAdminDto): Promise<admin> {
@@ -45,12 +46,24 @@ export class AdminService {
         nickname: updateAdminDto.nickname,
         email: updateAdminDto.email,
       },
+    }).catch(err => {
+      this.logger.error(`update admin err:  ${JSON.stringify(err.meta, null, 0)} / code: ${err.code}`)
+      if (err.code === 'P2025') {
+        throw new NotFoundException('수정할게 없음!')
+      }
+      throw new HttpException('서버 에러!', HttpStatus.INTERNAL_SERVER_ERROR)
     });
   }
 
   async remove(id: number): Promise<admin> {
     return this.prismaService.admin.delete({
-      where: { id },
+      where: {id},
+    }).catch(err => {
+      this.logger.error(`delete admin err: ${JSON.stringify(err.meta, null, 0)} / code: ${err.code}`)
+      if (err.code === 'P2025') {
+        throw new NotFoundException('지울게 없음!')
+      }
+      throw new HttpException('서버 에러!', HttpStatus.INTERNAL_SERVER_ERROR)
     });
   }
 }

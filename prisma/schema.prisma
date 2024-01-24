@@ -16,7 +16,7 @@ model admin {
   password  String
   nickname  String
   email     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(dbgenerated("NOW()")) @db.DateTime
+  updatedAt DateTime @default(dbgenerated("NOW() ON UPDATE NOW()")) @db.DateTime
 }
 
