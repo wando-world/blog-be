@@ -5,15 +5,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import { PrismaService } from './prisma/prisma.service';
-import {ConfigService} from "@nestjs/config";
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
-  const configService =  app.get(ConfigService)
-  const port: number = configService.get<number>("PORT", 3000)
+  const configService = app.get(ConfigService);
+  const port: number = configService.get<number>('PORT', 3000);
 
   app.useGlobalPipes(
     new ValidationPipe({
