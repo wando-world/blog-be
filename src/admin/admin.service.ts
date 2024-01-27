@@ -1,14 +1,20 @@
-import {HttpException, HttpStatus, Injectable, Logger, NotFoundException} from '@nestjs/common';
-import {CreateAdminDto} from './dto/create-admin.dto';
-import {UpdateAdminDto} from './dto/update-admin.dto';
-import {admin} from '@prisma/client';
-import {PrismaService} from '../prisma.service';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { UpdateAdminDto } from './dto/update-admin.dto';
+import { admin } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AdminService {
-  private readonly logger: Logger = new Logger(AdminService.name)
-  constructor(private prismaService: PrismaService) {}
+  private readonly logger: Logger = new Logger(AdminService.name);
+  constructor(private readonly prismaService: PrismaService) {}
 
   async create(createAdminDto: CreateAdminDto): Promise<admin> {
     const passwordHash: string = await bcrypt.hash(createAdminDto.password, 10);
@@ -36,34 +42,56 @@ export class AdminService {
   }
 
   async update(id: number, updateAdminDto: UpdateAdminDto): Promise<admin> {
-    const passwordHash: string = await bcrypt.hash(updateAdminDto.password, 10);
+    let passwordHash: string | null = null;
 
-    return this.prismaService.admin.update({
-      where: { id },
-      data: {
-        adminId: updateAdminDto.adminId,
-        password: passwordHash,
-        nickname: updateAdminDto.nickname,
-        email: updateAdminDto.email,
-      },
-    }).catch(err => {
-      this.logger.error(`update admin err:  ${JSON.stringify(err.meta, null, 0)} / code: ${err.code}`)
-      if (err.code === 'P2025') {
-        throw new NotFoundException('수정할게 없음!')
-      }
-      throw new HttpException('서버 에러!', HttpStatus.INTERNAL_SERVER_ERROR)
-    });
+    if (updateAdminDto.password) {
+      passwordHash = await bcrypt
+        .hash(updateAdminDto.password, 10)
+        .catch((err) => {
+          this.logger.error(`update admin encrypt password err: ${err}`);
+          throw new HttpException(
+            'Server error!',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        });
+    }
+
+    return this.prismaService.admin
+      .update({
+        where: { id },
+        data: {
+          adminId: updateAdminDto.adminId,
+          password: passwordHash,
+          nickname: updateAdminDto.nickname,
+          email: updateAdminDto.email,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        this.logger.error(
+          `update admin err:  ${JSON.stringify(err.meta, null, 0)} / code: ${err.code}`,
+        );
+        if (err.code === 'P2025') {
+          throw new NotFoundException('수정할게 없음!');
+        }
+        throw new HttpException('서버 에러!', HttpStatus.INTERNAL_SERVER_ERROR);
+      });
   }
 
   async remove(id: number): Promise<admin> {
-    return this.prismaService.admin.delete({
-      where: {id},
-    }).catch(err => {
-      this.logger.error(`delete admin err: ${JSON.stringify(err.meta, null, 0)} / code: ${err.code}`)
-      if (err.code === 'P2025') {
-        throw new NotFoundException('지울게 없음!')
-      }
-      throw new HttpException('서버 에러!', HttpStatus.INTERNAL_SERVER_ERROR)
-    });
+    return this.prismaService.admin
+      .delete({
+        where: { id },
+      })
+      .catch((err) => {
+        this.logger.error(err);
+        this.logger.error(
+          `delete admin err: ${JSON.stringify(err.meta, null, 0)} / code: ${err.code}`,
+        );
+        if (err.code === 'P2025') {
+          throw new NotFoundException('지울게 없음!');
+        }
+        throw new HttpException('서버 에러!', HttpStatus.INTERNAL_SERVER_ERROR);
+      });
   }
 }
