@@ -12,7 +12,7 @@ datasource db {
 
 model admin {
   id        Int     @id @default(autoincrement())
-  adminId   String
+  adminId   String  @unique
   password  String
   nickname  String
   email     String

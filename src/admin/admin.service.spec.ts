@@ -4,11 +4,11 @@ import { admin } from '@prisma/client';
 import { AdminRepository } from './admin.repository';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { BadRequestException } from '@nestjs/common';
 
 describe('AdminService', () => {
   let adminService: AdminService;
   let adminRepository: AdminRepository;
-  let prismaService: PrismaService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -21,7 +21,6 @@ describe('AdminService', () => {
 
     adminService = module.get<AdminService>(AdminService);
     adminRepository = module.get<AdminRepository>(AdminRepository);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   describe('findAll', (): void => {
@@ -32,6 +31,33 @@ describe('AdminService', () => {
   });
 
   describe('create', (): void => {
+    it('이미 있는 관리자 아이디', async (): Promise<void> => {
+      const createAdminDto: CreateAdminDto = CreateAdminDto.of(
+        'testUser',
+        '12345',
+        'wando',
+        'test@test.com',
+      );
+
+      const mockAdmin: admin = {
+        id: 1,
+        adminId: 'testUser',
+        password: '12345',
+        nickname: 'wando',
+        email: 'test@test.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      jest
+        .spyOn(adminRepository, 'findOneByEmail')
+        .mockResolvedValue(mockAdmin);
+
+      await expect(async (): Promise<void> => {
+        await adminService.create(createAdminDto);
+      }).rejects.toThrow(new BadRequestException('이미 있는 아이디!'));
+    });
+
     it('관리자 생성', async (): Promise<void> => {
       const createAdminDto: CreateAdminDto = CreateAdminDto.of(
         'testUser',
@@ -52,7 +78,7 @@ describe('AdminService', () => {
 
       jest.spyOn(adminRepository, 'create').mockResolvedValue(mockAdmin);
 
-      const result = await adminService.create(createAdminDto);
+      const result: admin = await adminService.create(createAdminDto);
       expect(result.adminId).toBe(createAdminDto.adminId);
       expect(result.email).toBe(createAdminDto.email);
     });

@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { admin } from '@prisma/client';
@@ -11,6 +17,14 @@ export class AdminService {
   constructor(private readonly adminRepository: AdminRepository) {}
 
   async create(createAdminDto: CreateAdminDto): Promise<admin> {
+    // admin id 중복 체크
+    const admin: admin = await this.adminRepository.findOneByEmail(
+      createAdminDto.adminId,
+    );
+    if (admin != null) {
+      throw new BadRequestException('이미 있는 아이디!');
+    }
+
     const passwordHash: string = await bcrypt.hash(createAdminDto.password, 10);
 
     return await this.adminRepository.create(createAdminDto, passwordHash);

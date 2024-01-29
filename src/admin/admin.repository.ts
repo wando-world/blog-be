@@ -14,7 +14,7 @@ export class AdminRepository {
   ): Promise<admin> {
     const { adminId, nickname, email } = createAdminDto;
 
-    return await this.prismaService.admin.create({
+    return this.prismaService.admin.create({
       data: {
         adminId,
         password,
@@ -24,8 +24,16 @@ export class AdminRepository {
     });
   }
 
+  async findOneByEmail(adminId: string): Promise<admin> {
+    return this.prismaService.admin.findUnique({
+      where: {
+        adminId,
+      },
+    });
+  }
+
   async findAll(): Promise<admin[]> {
-    return await this.prismaService.admin.findMany();
+    return this.prismaService.admin.findMany();
   }
 
   async findOne(id: number): Promise<admin> {
