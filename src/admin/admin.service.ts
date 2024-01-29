@@ -19,16 +19,18 @@ export class AdminService {
 
   async create(createAdminDto: CreateAdminDto): Promise<void> {
     // admin id 중복 체크
-    const admin: admin = await this.adminRepository.findOneByEmail(
-      createAdminDto.adminId,
-    );
-    if (admin != null) {
+    const admin: admin = await this.findOneByAdminId(createAdminDto.adminId);
+    if (admin) {
       throw new BadRequestException('이미 있는 아이디!');
     }
 
     const passwordHash: string = await bcrypt.hash(createAdminDto.password, 10);
 
     await this.adminRepository.create(createAdminDto, passwordHash);
+  }
+
+  async findOneByAdminId(adminId: string): Promise<admin> {
+    return await this.adminRepository.findOneByAdminId(adminId);
   }
 
   async findAll(): Promise<AdminDto[]> {
@@ -38,7 +40,10 @@ export class AdminService {
 
   async findOne(id: number): Promise<AdminDto> {
     const admin: admin = await this.adminRepository.findOne(id);
-    console.assert(admin !== null, JSON.stringify({id, msg: '없는 관리자 조회는 말이 안됨!'}, null, 2))
+    console.assert(
+      admin !== null,
+      JSON.stringify({ id, msg: '없는 관리자 조회는 말이 안됨!' }, null, 2),
+    );
     return new AdminDto(admin);
   }
 

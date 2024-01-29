@@ -24,7 +24,7 @@ export class AdminRepository {
     });
   }
 
-  async findOneByEmail(adminId: string): Promise<admin> {
+  async findOneByAdminId(adminId: string): Promise<admin> {
     return this.prismaService.admin.findUnique({
       where: {
         adminId,

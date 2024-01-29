@@ -15,7 +15,7 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ApiBody, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
-import {AdminDto} from "./dto/admin.dto";
+import { AdminDto } from './dto/admin.dto';
 
 @ApiTags('admin')
 @Controller('api/admin')

@@ -30,6 +30,7 @@ async function bootstrap() {
     .setTitle(`Wando's Blog API`)
     .setDescription(`The Wando's API description`)
     .setVersion('1.0')
+    .addTag('auth', '인증/인가 관련 API')
     .addTag('admin', '관리자 관련 API')
     .addTag('home', '메인 화면 API')
     .build();

@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
-import * as process from 'process';
+import { AuthModule } from './auth/auth.module';
+import config from './config/config';
 
 @Module({
   imports: [
-    AdminModule,
     ConfigModule.forRoot({
       cache: true,
       isGlobal: true,
-      envFilePath: `.${process.env.NODE_ENV}.env`,
+      load: [config],
     }),
+    AdminModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
