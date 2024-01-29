@@ -13,9 +13,9 @@ import {
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
-import { admin } from '@prisma/client';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ApiBody, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import {AdminDto} from "./dto/admin.dto";
 
 @ApiTags('admin')
 @Controller('api/admin')
@@ -39,7 +39,7 @@ export class AdminController {
    */
   @Get()
   @ResponseMessage('조회 완료!')
-  async findAll(): Promise<admin[]> {
+  async findAll(): Promise<AdminDto[]> {
     return await this.adminService.findAll();
   }
 
@@ -48,8 +48,8 @@ export class AdminController {
    */
   @Get(':id')
   @ResponseMessage('조회 완료!')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<admin> {
-    const foundOne: admin = await this.adminService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<AdminDto> {
+    const foundOne: AdminDto = await this.adminService.findOne(id);
 
     if (foundOne == null) {
       throw new HttpException('없는 관리자!', HttpStatus.NOT_FOUND);
