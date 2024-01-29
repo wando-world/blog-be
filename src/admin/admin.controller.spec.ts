@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
-import {AdminRepository} from "./admin.repository";
-import {PrismaService} from "../prisma/prisma.service";
+import { AdminRepository } from './admin.repository';
+import { PrismaService } from '../prisma/prisma.service';
 
 describe('AdminController', () => {
   let controller: AdminController;

@@ -11,10 +11,10 @@ export class AdminRepository {
   async create(
     createAdminDto: CreateAdminDto,
     password: string,
-  ): Promise<admin> {
+  ): Promise<void> {
     const { adminId, nickname, email } = createAdminDto;
 
-    return this.prismaService.admin.create({
+    await this.prismaService.admin.create({
       data: {
         adminId,
         password,
@@ -48,28 +48,26 @@ export class AdminRepository {
     id: number,
     updateAdminDto: UpdateAdminDto,
     password: string,
-  ): Promise<admin> {
-    const { adminId, nickname, email } = updateAdminDto;
+  ): Promise<void> {
+    const { nickname, email } = updateAdminDto;
 
     const data: {
-      adminId: string;
       nickname: string;
       email: string;
       password: string;
     } = {
-      adminId,
       nickname,
       email,
       password,
     };
-    return this.prismaService.admin.update({
+    await this.prismaService.admin.update({
       where: { id },
-      data: data as any,
+      data: data,
     });
   }
 
-  async remove(id: number): Promise<admin> {
-    return this.prismaService.admin.delete({
+  async remove(id: number): Promise<void> {
+    await this.prismaService.admin.delete({
       where: { id },
     });
   }

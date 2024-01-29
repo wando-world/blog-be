@@ -10,13 +10,14 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 import { admin } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AdminRepository } from './admin.repository';
+import { AdminDto } from './dto/admin.dto';
 
 @Injectable()
 export class AdminService {
   private readonly logger: Logger = new Logger(AdminService.name);
   constructor(private readonly adminRepository: AdminRepository) {}
 
-  async create(createAdminDto: CreateAdminDto): Promise<admin> {
+  async create(createAdminDto: CreateAdminDto): Promise<void> {
     // admin id 중복 체크
     const admin: admin = await this.adminRepository.findOneByEmail(
       createAdminDto.adminId,
@@ -27,18 +28,21 @@ export class AdminService {
 
     const passwordHash: string = await bcrypt.hash(createAdminDto.password, 10);
 
-    return await this.adminRepository.create(createAdminDto, passwordHash);
+    await this.adminRepository.create(createAdminDto, passwordHash);
   }
 
-  async findAll(): Promise<admin[]> {
-    return this.adminRepository.findAll();
+  async findAll(): Promise<AdminDto[]> {
+    const admins: admin[] = await this.adminRepository.findAll();
+    return admins.map((admin: admin) => new AdminDto(admin));
   }
 
-  async findOne(id: number): Promise<admin> {
-    return this.adminRepository.findOne(id);
+  async findOne(id: number): Promise<AdminDto> {
+    const admin: admin = await this.adminRepository.findOne(id);
+    console.assert(admin !== null, JSON.stringify({id, msg: '없는 관리자 조회는 말이 안됨!'}, null, 2))
+    return new AdminDto(admin);
   }
 
-  async update(id: number, updateAdminDto: UpdateAdminDto): Promise<admin> {
+  async update(id: number, updateAdminDto: UpdateAdminDto): Promise<void> {
     let passwordHash: string | undefined = undefined;
 
     if (updateAdminDto.password) {
@@ -52,10 +56,10 @@ export class AdminService {
           );
         });
     }
-    return this.adminRepository.update(id, updateAdminDto, passwordHash);
+    await this.adminRepository.update(id, updateAdminDto, passwordHash);
   }
 
-  async remove(id: number): Promise<admin> {
-    return this.adminRepository.remove(id);
+  async remove(id: number): Promise<void> {
+    await this.adminRepository.remove(id);
   }
 }
