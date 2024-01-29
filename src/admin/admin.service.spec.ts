@@ -31,12 +31,6 @@ describe('AdminService', () => {
     });
   });
 
-  // describe('findOne', (): void => {
-  //   it('관리자 한명 조회', async () => {
-  //
-  //   })
-  // })
-
   describe('create', (): void => {
     it('관리자 생성', async (): Promise<void> => {
       const createAdminDto: CreateAdminDto = CreateAdminDto.of(
@@ -48,7 +42,7 @@ describe('AdminService', () => {
 
       const mockAdmin: admin = {
         id: 1,
-        adminId: 'testUser111',
+        adminId: 'testUser',
         password: '12345',
         nickname: 'wando',
         email: 'test@test.com',
@@ -59,9 +53,8 @@ describe('AdminService', () => {
       jest.spyOn(adminRepository, 'create').mockResolvedValue(mockAdmin);
 
       const result = await adminService.create(createAdminDto);
-      console.log('wando ???')
-      expect(result.adminId).toBe(mockAdmin.adminId);
-      expect(result.email).toBe(mockAdmin.email);
+      expect(result.adminId).toBe(createAdminDto.adminId);
+      expect(result.email).toBe(createAdminDto.email);
     });
   });
 });
