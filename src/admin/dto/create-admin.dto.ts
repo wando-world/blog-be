@@ -43,4 +43,18 @@ export class CreateAdminDto {
    */
   @IsEmail({}, { message: '이메일 형식으로 입력필요!, 입력값: $value' })
   email: string;
+
+  static of(
+    adminId: string,
+    password: string,
+    nickname: string,
+    email: string,
+  ): CreateAdminDto {
+    const createAdminDto: CreateAdminDto = new CreateAdminDto();
+    createAdminDto.adminId = adminId;
+    createAdminDto.password = password;
+    createAdminDto.nickname = nickname;
+    createAdminDto.email = email;
+    return createAdminDto;
+  }
 }
