@@ -51,7 +51,7 @@ describe('AdminService', () => {
       };
 
       jest
-        .spyOn(adminRepository, 'findOneByEmail')
+        .spyOn(adminRepository, 'findOneByAdminId')
         .mockResolvedValue(mockAdmin);
 
       await expect(async (): Promise<void> => {
