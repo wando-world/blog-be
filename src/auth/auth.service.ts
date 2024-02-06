@@ -1,31 +1,111 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AdminService } from '../admin/admin.service';
-import { admin } from '@prisma/client';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { SigninAuthDto, SignupAuthDto } from './dto';
 import * as bcrypt from 'bcrypt';
+import { Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
-import { IPayload } from './security/payload.interface';
-import { JwtDto } from './dto/jwt.dto';
+import { Admin } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private adminService: AdminService,
+    private prisma: PrismaService,
     private jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
-  async signIn(adminId: string, password: string): Promise<JwtDto> {
-    const admin: admin = await this.adminService.findOneByAdminId(adminId);
-    if (!admin || !(await bcrypt.compare(password, admin.password))) {
-      throw new UnauthorizedException('해당 관리자는 없어!');
-    }
+  async signup(dto: SignupAuthDto): Promise<Tokens> {
+    const passwordHash: string = await this.hashData(dto.password);
+    const newAdmin: Admin = await this.prisma.admin.create({
+      data: {
+        username: dto.username,
+        password: passwordHash,
+        nickname: dto.nickname,
+        email: dto.email,
+      },
+    });
+    const tokens: Tokens = await this.getTokens(newAdmin.id, newAdmin.username);
+    await this.updateRtkHash(newAdmin.id, tokens.rtk);
+    return tokens;
+  }
 
-    const payload: IPayload = {
-      id: admin.id,
-      sub: admin.adminId,
-      nickname: admin.nickname,
+  async signin(dto: SigninAuthDto): Promise<Tokens> {
+    const user: Admin = await this.prisma.admin.findUnique({
+      where: {
+        username: dto.username,
+      },
+    });
+    if (!user) throw new ForbiddenException('아이디 또는 비번이 이상함!');
+
+    const passwordMatches: boolean = await bcrypt.compare(
+      dto.password,
+      user.password,
+    );
+    if (!passwordMatches)
+      throw new ForbiddenException('아이디 또는 비번이 이상함!');
+
+    const tokens: Tokens = await this.getTokens(user.id, user.username);
+    await this.updateRtkHash(user.id, tokens.rtk);
+    return tokens;
+  }
+  async logout(userId: number) {
+    await this.prisma.admin.updateMany({
+      where: {
+        id: userId,
+        hashedRtk: {
+          not: null,
+        },
+      },
+      data: {
+        hashedRtk: null,
+      },
+    });
+  }
+  refreshToken() {}
+
+  async updateRtkHash(userId: number, rtk: string) {
+    const hash = await this.hashData(rtk);
+    await this.prisma.admin.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        hashedRtk: hash,
+      },
+    });
+  }
+
+  hashData(data: string): Promise<string> {
+    return bcrypt.hash(data, 10);
+  }
+
+  async getTokens(userId: number, username: string): Promise<Tokens> {
+    const [atk, rtk] = await Promise.all([
+      this.jwtService.signAsync(
+        {
+          sub: userId,
+          username,
+        },
+        {
+          secret: this.configService.get<string>('SECRET_KEY'),
+          expiresIn: this.configService.get<string>('ATK_EXPIRES_IN'),
+        },
+      ),
+      this.jwtService.signAsync(
+        {
+          sub: userId,
+          username,
+        },
+        {
+          secret: this.configService.get<string>('SECRET_KEY'),
+          expiresIn: this.configService.get<string>('RTK_EXPIRES_IN'),
+        },
+      ),
+    ]);
+    return {
+      atk,
+      rtk,
     };
-    const atk: string = await this.jwtService.signAsync(payload);
-
-    return new JwtDto(payload, atk);
   }
 }
