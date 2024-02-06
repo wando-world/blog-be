@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
-import { admin } from '@prisma/client';
+import { Admin } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AdminRepository } from './admin.repository';
 import { AdminDto } from './dto/admin.dto';
@@ -19,7 +19,7 @@ export class AdminService {
 
   async create(createAdminDto: CreateAdminDto): Promise<void> {
     // admin id 중복 체크
-    const admin: admin = await this.findOneByAdminId(createAdminDto.adminId);
+    const admin: Admin = await this.findOneByAdminId(createAdminDto.username);
     if (admin) {
       throw new BadRequestException('이미 있는 아이디!');
     }
@@ -29,17 +29,17 @@ export class AdminService {
     await this.adminRepository.create(createAdminDto, passwordHash);
   }
 
-  async findOneByAdminId(adminId: string): Promise<admin> {
-    return await this.adminRepository.findOneByAdminId(adminId);
+  async findOneByAdminId(username: string): Promise<Admin> {
+    return await this.adminRepository.findOneByAdminId(username);
   }
 
   async findAll(): Promise<AdminDto[]> {
-    const admins: admin[] = await this.adminRepository.findAll();
-    return admins.map((admin: admin) => new AdminDto(admin));
+    const admins: Admin[] = await this.adminRepository.findAll();
+    return admins.map((admin: Admin) => new AdminDto(admin));
   }
 
   async findOne(id: number): Promise<AdminDto> {
-    const admin: admin = await this.adminRepository.findOne(id);
+    const admin: Admin = await this.adminRepository.findOne(id);
     console.assert(
       admin !== null,
       JSON.stringify({ id, msg: '없는 관리자 조회는 말이 안됨!' }, null, 2),

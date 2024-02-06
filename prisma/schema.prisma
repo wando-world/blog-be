@@ -6,17 +6,20 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model admin {
+model Admin {
   id        Int     @id @default(autoincrement())
-  adminId   String  @unique
+  username   String  @unique
   password  String
   nickname  String
   email     String
-  createdAt DateTime @default(dbgenerated("NOW()")) @db.DateTime
-  updatedAt DateTime @default(dbgenerated("NOW() ON UPDATE NOW()")) @db.DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  hashedRtk String?
+
+  @@map("admin")
 }
 
