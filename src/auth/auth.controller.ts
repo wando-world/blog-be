@@ -1,10 +1,15 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
-import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { AuthService } from './auth.service';
 import { SigninAuthDto, SignupAuthDto } from './dto';
 import { Tokens } from './types';
-import { AuthGuard } from '@nestjs/passport';
+import { RtkGuard } from '../common/guards';
+import {
+  GetCurrentUser,
+  GetCurrentUserId,
+  Public,
+  ResponseMessage,
+} from '../common/decorators';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -14,6 +19,7 @@ export class AuthController {
   /**
    * 회원가입!
    */
+  @Public()
   @Post('singup')
   @ResponseMessage('회원 가입 완료!')
   @ApiCreatedResponse({
@@ -26,6 +32,7 @@ export class AuthController {
   /**
    * 로그인!
    */
+  @Public()
   @Post('signin')
   @ResponseMessage('로그인!')
   @ApiCreatedResponse({
@@ -39,28 +46,31 @@ export class AuthController {
    * 로그아웃!
    */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
   @Post('logout')
   @ResponseMessage('로그아웃!')
   @ApiCreatedResponse({
     description: `{message: 로그아웃!, statuscode: 200, data: null}`,
   })
-  async logout(@Request() req: any): Promise<void> {
-    const user = req.user;
-    await this.authService.logout(user['id']);
+  async logout(@GetCurrentUserId() userId: number): Promise<void> {
+    await this.authService.logout(userId);
   }
 
   /**
    * 토큰 갱신!
    */
   @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @Public()
+  @UseGuards(RtkGuard)
   @Post('refresh')
   @ResponseMessage('토큰 재발급!')
   @ApiCreatedResponse({
     description: `{message: 토큰 재발급!, statuscode: 200, data: null}`,
   })
-  async refreshToken() {
-    this.authService.refreshToken();
+  async refreshToken(
+    @GetCurrentUserId() userId: number,
+    @GetCurrentUser('rtk') rtk: string,
+  ): Promise<Tokens> {
+    console.log(userId, rtk);
+    return await this.authService.refreshToken(userId, rtk);
   }
 }

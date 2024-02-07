@@ -10,14 +10,15 @@ export class RtkStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.get<string>('SECRET_KEY'),
+      passReqToCallback: true,
     });
   }
 
   validate(req: Request, payload: any) {
-    const refreshToken = req.get('authorization').replace('Bearer', '').trim();
+    const rtk: string = req?.get('authorization')?.replace('Bearer', '').trim();
     return {
       ...payload,
-      refreshToken,
+      rtk,
     };
   }
 }

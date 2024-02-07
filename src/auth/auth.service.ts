@@ -62,10 +62,26 @@ export class AuthService {
       },
     });
   }
-  refreshToken() {}
+  async refreshToken(userId: number, rtk: string): Promise<Tokens> {
+    const user: Admin = await this.prisma.admin.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user || !user.hashedRtk) {
+      throw new ForbiddenException('접근 자격이 없음!');
+    }
 
-  async updateRtkHash(userId: number, rtk: string) {
-    const hash = await this.hashData(rtk);
+    const rtkMatches: boolean = await bcrypt.compare(rtk, user.hashedRtk);
+    if (!rtkMatches) throw new ForbiddenException('RTK가 이상함!');
+
+    const tokens: Tokens = await this.getTokens(user.id, user.username);
+    await this.updateRtkHash(user.id, tokens.rtk);
+    return tokens;
+  }
+
+  async updateRtkHash(userId: number, rtk: string): Promise<void> {
+    const hash: string = await this.hashData(rtk);
     await this.prisma.admin.update({
       where: {
         id: userId,
@@ -85,6 +101,7 @@ export class AuthService {
       this.jwtService.signAsync(
         {
           sub: userId,
+          // type: 'atk',
           username,
         },
         {
@@ -95,6 +112,7 @@ export class AuthService {
       this.jwtService.signAsync(
         {
           sub: userId,
+          // type: 'rtk',
           username,
         },
         {

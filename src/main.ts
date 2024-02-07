@@ -6,6 +6,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import { PrismaService } from './prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+// import { AtkGuard } from './common/guards';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -14,6 +15,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port: number = configService.get<number>('PORT', 3000);
+  const reflector: Reflector = new Reflector();
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -23,8 +25,9 @@ async function bootstrap() {
   );
   app.useGlobalInterceptors(
     new LoggingInterceptor(),
-    new ResponseTransformInterceptor(new Reflector()),
+    new ResponseTransformInterceptor(reflector),
   );
+  // app.useGlobalGuards(new AtkGuard(reflector));
 
   const config = new DocumentBuilder()
     .setTitle(`Wando's Blog API`)
