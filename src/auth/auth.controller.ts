@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
-import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { AuthService } from './auth.service';
 import { SigninAuthDto, SignupAuthDto } from './dto';
@@ -38,6 +38,7 @@ export class AuthController {
   /**
    * 로그아웃!
    */
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post('logout')
   @ResponseMessage('로그아웃!')
@@ -52,6 +53,7 @@ export class AuthController {
   /**
    * 토큰 갱신!
    */
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh')
   @ResponseMessage('토큰 재발급!')
