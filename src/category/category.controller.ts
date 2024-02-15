@@ -1,7 +1,16 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CategoryService } from './category.service';
-import { GetCurrentUserId, ResponseMessage } from '../common/decorators';
+import {
+  GetCurrentUserId,
+  Public,
+  ResponseMessage,
+} from '../common/decorators';
 import { CreateCategoryDto } from './dto';
 
 @ApiTags('2. 카테고리')
@@ -23,5 +32,18 @@ export class CategoryController {
     @GetCurrentUserId() userId: number,
   ): Promise<void> {
     await this.categoryService.createCategory(dto, userId);
+  }
+
+  /**
+   * 카테고리 최신 순 조회!
+   */
+  @Get()
+  @Public()
+  @ResponseMessage('카테고리 최신 순 조회!')
+  @ApiOkResponse({
+    description: `{message: 카테고리 최신 순 조회!, statusCode: 200, data: []}`,
+  })
+  findAllCategory(): string {
+    return '카테고리 전체 조회!';
   }
 }
