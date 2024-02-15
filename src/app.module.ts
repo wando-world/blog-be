@@ -1,16 +1,28 @@
 import { Module } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
-import * as process from 'process';
+import { AuthModule } from './auth/auth.module';
+import config from './config/config';
+import { PrismaModule } from './prisma/prisma.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AtkGuard } from './common/guards';
 
 @Module({
   imports: [
-    AdminModule,
     ConfigModule.forRoot({
       cache: true,
       isGlobal: true,
-      envFilePath: `.${process.env.NODE_ENV}.env`,
+      load: [config],
     }),
+    AdminModule,
+    AuthModule,
+    PrismaModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AtkGuard,
+    },
   ],
 })
 export class AppModule {}

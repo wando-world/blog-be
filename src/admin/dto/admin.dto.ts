@@ -1,16 +1,16 @@
-import { admin } from '@prisma/client';
+import { Admin } from '@prisma/client';
 
 export class AdminDto {
   id: number;
-  adminId: string;
+  username: string;
   nickname: string;
   email: string;
   createdAt: Date;
   updatedAt: Date;
 
-  constructor(admin: admin) {
+  constructor(admin: Admin) {
     this.id = admin.id;
-    this.adminId = admin.adminId;
+    this.username = admin.username;
     this.nickname = admin.nickname;
     this.email = admin.email;
     this.createdAt = admin.createdAt;

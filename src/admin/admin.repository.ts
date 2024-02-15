@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
-import { admin } from '@prisma/client';
+import { Admin } from '@prisma/client';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 
 @Injectable()
@@ -12,11 +12,11 @@ export class AdminRepository {
     createAdminDto: CreateAdminDto,
     password: string,
   ): Promise<void> {
-    const { adminId, nickname, email } = createAdminDto;
+    const { username, nickname, email } = createAdminDto;
 
     await this.prismaService.admin.create({
       data: {
-        adminId,
+        username,
         password,
         nickname,
         email,
@@ -24,19 +24,19 @@ export class AdminRepository {
     });
   }
 
-  async findOneByEmail(adminId: string): Promise<admin> {
+  async findOneByAdminId(username: string): Promise<Admin> {
     return this.prismaService.admin.findUnique({
       where: {
-        adminId,
+        username,
       },
     });
   }
 
-  async findAll(): Promise<admin[]> {
+  async findAll(): Promise<Admin[]> {
     return this.prismaService.admin.findMany();
   }
 
-  async findOne(id: number): Promise<admin> {
+  async findOne(id: number): Promise<Admin> {
     return this.prismaService.admin.findUnique({
       where: {
         id,
