@@ -20,6 +20,32 @@ model Admin {
   updatedAt DateTime @updatedAt
   hashedRtk String?
 
+  categories Category[]
   @@map("admin")
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  admin Admin @relation(fields: [adminId], references: [id])
+  adminId Int
+
+  posts Post[]
+  @@map("category")
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  title String
+  content String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  @@map("post")
 }
 
