@@ -11,8 +11,8 @@ import {
   ResponseMessage,
 } from '../common/decorators';
 
-@ApiTags('auth')
-@Controller('auth')
+@ApiTags('1. 인증/인가')
+@Controller('api/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
