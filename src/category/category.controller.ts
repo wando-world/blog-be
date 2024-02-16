@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
@@ -12,6 +13,7 @@ import {
   ResponseMessage,
 } from '../common/decorators';
 import { CreateCategoryDto } from './dto';
+import { Categories } from './types';
 
 @ApiTags('2. 카테고리')
 @Controller('api/category')
@@ -43,7 +45,13 @@ export class CategoryController {
   @ApiOkResponse({
     description: `{message: 카테고리 최신 순 조회!, statusCode: 200, data: []}`,
   })
-  findAllCategory(): string {
-    return '카테고리 전체 조회!';
+  @ApiQuery({
+    name: 'lastId',
+    required: false,
+    type: Number,
+    description: '현재 조회한 페이지 마지막 id',
+  })
+  async findAllCategory(@Query('lastId') lastId?: number): Promise<Categories> {
+    return await this.categoryService.findAllCategory(lastId);
   }
 }
